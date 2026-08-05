@@ -424,34 +424,33 @@ function formatYearsAgo(yearsAgo) {
   return `${fmt(yearsAgo)} years ago`;
 }
 
-// Positions each point by its log-scale share of 13.8 billion years (oldest
-// at top, now at bottom). Pure linear scale sounds more "honest" but a range
-// this wide (billions of years down to tens of years) makes everything after
-// the dinosaurs collapse onto the same pixel, so every recent event just gets
-// stacked at a flat minimum gap and looks falsely equidistant. Log scale
-// keeps the huge empty stretches from deep time while letting relative
-// differences among recent events show up instead of flattening them all.
+// Positions each point by its true linear share of 13.8 billion years
+// (oldest at top, now at bottom). This is deliberately NOT a log scale:
+// log scale is easier to fit on a screen, but it flatters recent history by
+// giving it visual weight it hasn't earned. On the real, linear timeline,
+// the 9.2-billion-year gap between the Big Bang and Earth forming dwarfs
+// everything that comes after it combined, and the only honest way to show
+// that is to make the empty space between them dwarf everything else too,
+// even if it takes thousands of pixels of scrolling through nothing to
+// cross it. That length IS the point.
 //
-// Even on a log scale, several pairs still land closer together than a
-// legible minimum gap allows, and a flat floor would make all of those pairs
-// look identical again, hiding the fact that a 9-billion-year gap and a
-// 6,000-year gap are nothing alike. So the floor itself scales with how big
-// each pair's real (raw, non-log) difference is: every consecutive pair gets
-// its own minimum, and only when the natural log-scale gap already exceeds
-// that does the real position win outright.
+// The one place linear scale breaks down is the tail: agriculture, writing,
+// math, science, and your own life are all within 12,000 years of "now",
+// which is such a small sliver of 13.8 billion years that they'd overlap
+// into unreadable mush. So each pair still gets a minimum gap, but that
+// floor is kept small relative to the deep-time distances, and it scales
+// with each pair's own real (raw, non-log) difference so no two gaps in
+// that crowded tail end up identical either.
 function renderDeepTimeline(containerId, yourYearsAgo, birth) {
-  const TRACK_HEIGHT = 2400;
+  const TRACK_HEIGHT = 13800; // 1000px per billion years
   const BASE_GAP = 140;
-  const EXTRA_GAP_RANGE = 300;
+  const EXTRA_GAP_RANGE = 100;
 
   const all = [
     ...TIMELINE_EVENTS,
     { label: "You", yearsAgo: yourYearsAgo, desc: "Every birthday, every memory, everything you've ever done happened in the last blink of this timeline.", isYou: true },
   ];
-  const logs = all.map(e => Math.log10(e.yearsAgo));
-  const maxLog = logs[0]; // Big Bang
-  const minLog = logs[logs.length - 1]; // You
-  const span = maxLog - minLog;
+  const maxYearsAgo = all[0].yearsAgo; // Big Bang
 
   const rawGapLogs = all.slice(1).map((e, i) => Math.log10(all[i].yearsAgo - e.yearsAgo));
   const minRawLog = Math.min(...rawGapLogs);
@@ -460,7 +459,7 @@ function renderDeepTimeline(containerId, yourYearsAgo, birth) {
 
   let prevY = -Infinity;
   const positioned = all.map((e, i) => {
-    const idealY = ((maxLog - logs[i]) / span) * TRACK_HEIGHT;
+    const idealY = (1 - e.yearsAgo / maxYearsAgo) * TRACK_HEIGHT;
     const minGap = i === 0 ? 0 : BASE_GAP + ((rawGapLogs[i - 1] - minRawLog) / rawLogSpan) * EXTRA_GAP_RANGE;
     const y = Math.max(idealY, prevY + minGap);
     prevY = y;
@@ -917,11 +916,17 @@ async function drawShareCard(data) {
 
 function initDateInputs() {
   const segs = [document.getElementById("bday"), document.getElementById("bmonth"), document.getElementById("byear")];
+  const maxValues = [31, 12, null];
 
   segs.forEach((seg, i) => {
+    const max = maxValues[i];
     seg.addEventListener("input", () => {
-      seg.value = seg.value.replace(/[^0-9]/g, "").slice(0, seg.maxLength);
-      if (seg.value.length === seg.maxLength && segs[i + 1]) {
+      let val = seg.value.replace(/[^0-9]/g, "").slice(0, seg.maxLength);
+      if (max && val !== "" && Number(val) > max) {
+        val = String(max);
+      }
+      seg.value = val;
+      if (val.length === seg.maxLength && segs[i + 1]) {
         segs[i + 1].focus();
         segs[i + 1].select();
       }
