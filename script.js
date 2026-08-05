@@ -424,30 +424,51 @@ function formatYearsAgo(yearsAgo) {
   return `${fmt(yearsAgo)} years ago`;
 }
 
-// Positions each point by its true share of 13.8 billion years (oldest at
-// top, now at bottom), so the empty stretches are as real as the crowded
-// ones. A minimum gap is enforced only to keep text from overlapping; where
-// there's genuinely more time between two events, that extra space survives.
+// Positions each point by its log-scale share of 13.8 billion years (oldest
+// at top, now at bottom). Pure linear scale sounds more "honest" but a range
+// this wide (billions of years down to tens of years) makes everything after
+// the dinosaurs collapse onto the same pixel, so every recent event just gets
+// stacked at a flat minimum gap and looks falsely equidistant. Log scale
+// keeps the huge empty stretches from deep time while letting relative
+// differences among recent events show up instead of flattening them all.
+//
+// Even on a log scale, several pairs still land closer together than a
+// legible minimum gap allows, and a flat floor would make all of those pairs
+// look identical again, hiding the fact that a 9-billion-year gap and a
+// 6,000-year gap are nothing alike. So the floor itself scales with how big
+// each pair's real (raw, non-log) difference is: every consecutive pair gets
+// its own minimum, and only when the natural log-scale gap already exceeds
+// that does the real position win outright.
 function renderDeepTimeline(containerId, yourYearsAgo, birth) {
   const TRACK_HEIGHT = 2400;
-  const MIN_GAP = 150;
+  const BASE_GAP = 140;
+  const EXTRA_GAP_RANGE = 300;
 
   const all = [
     ...TIMELINE_EVENTS,
     { label: "You", yearsAgo: yourYearsAgo, desc: "Every birthday, every memory, everything you've ever done happened in the last blink of this timeline.", isYou: true },
   ];
-  const maxYearsAgo = all[0].yearsAgo; // Big Bang
+  const logs = all.map(e => Math.log10(e.yearsAgo));
+  const maxLog = logs[0]; // Big Bang
+  const minLog = logs[logs.length - 1]; // You
+  const span = maxLog - minLog;
+
+  const rawGapLogs = all.slice(1).map((e, i) => Math.log10(all[i].yearsAgo - e.yearsAgo));
+  const minRawLog = Math.min(...rawGapLogs);
+  const maxRawLog = Math.max(...rawGapLogs);
+  const rawLogSpan = maxRawLog - minRawLog || 1;
 
   let prevY = -Infinity;
-  const positioned = all.map(e => {
-    const idealY = (1 - e.yearsAgo / maxYearsAgo) * TRACK_HEIGHT;
-    const y = Math.max(idealY, prevY + MIN_GAP);
+  const positioned = all.map((e, i) => {
+    const idealY = ((maxLog - logs[i]) / span) * TRACK_HEIGHT;
+    const minGap = i === 0 ? 0 : BASE_GAP + ((rawGapLogs[i - 1] - minRawLog) / rawLogSpan) * EXTRA_GAP_RANGE;
+    const y = Math.max(idealY, prevY + minGap);
     prevY = y;
     return { ...e, y };
   });
   // Generous trailing buffer: the last item's own text block needs room
   // below its `top`, or it overflows into whatever follows the timeline.
-  const totalHeight = prevY + MIN_GAP;
+  const totalHeight = prevY + BASE_GAP;
 
   const items = positioned.map(e => `<div class="vt-item${e.isYou ? " you" : ""}" style="top:${e.y}px">
     <span class="vt-dot"></span>
@@ -885,7 +906,11 @@ async function drawShareCard(data) {
   ctx.font = "400 22px 'Space Mono'";
   ctx.fillStyle = "#f3ede166";
   ctx.textAlign = "center";
-  ctx.fillText("EPOCH · YOUR LIFE, BY THE NUMBERS", W / 2, H - 80);
+  ctx.fillText("EPOCH · YOUR LIFE, BY THE NUMBERS", W / 2, H - 100);
+
+  ctx.font = "700 24px 'Space Mono'";
+  ctx.fillStyle = accent;
+  ctx.fillText("Get yours at https://epoch.snanu.com", W / 2, H - 68);
 }
 
 /* ============================= DATE INPUT (DD / MM / YYYY segments) ============================= */

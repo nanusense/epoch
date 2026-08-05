@@ -750,9 +750,10 @@ section{
   transition: background 900ms ease;
 }
 .vt-title{
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
   display: block;
 }
 .vt-meta{
