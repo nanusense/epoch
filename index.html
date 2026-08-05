@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EPOCH: Your Life, By The Numbers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=Italiana&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=13" />
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="glow" id="glow" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+<nav class="rail" id="rail" aria-hidden="true"></nav>
+
+<main id="story">
+
+  <section class="hero" id="hero" data-accent="#f4b942">
+    <div class="hero-frame">
+      <span class="eyebrow">EST. THE DAY YOU WERE BORN</span>
+      <h1 class="wordmark">EPOCH</h1>
+      <p class="hero-sub">Every birthdate hides a story only numbers can tell.<br>Pick yours and see.</p>
+
+      <form id="dateForm" class="date-form" autocomplete="off">
+        <fieldset class="date-input-group">
+          <legend class="sr-only">Your birthdate</legend>
+          <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" class="date-seg" id="bday" maxlength="2" placeholder="DD" aria-label="Day" />
+          <span class="date-sep">/</span>
+          <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" class="date-seg" id="bmonth" maxlength="2" placeholder="MM" aria-label="Month" />
+          <span class="date-sep">/</span>
+          <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" class="date-seg date-seg-year" id="byear" maxlength="4" placeholder="YYYY" aria-label="Year" />
+        </fieldset>
+        <button type="submit">Reveal my numbers →</button>
+      </form>
+      <p class="hero-note" id="heroError" role="alert"></p>
+    </div>
+    <div class="hero-scroll-hint">↓ your story unlocks below</div>
+  </section>
+
+  <section class="fact" id="sec-basics" data-accent="#ff6b5b" data-nav="Basics">
+    <span class="eyebrow"><span class="idx">01</span> THE BASICS</span>
+    <h2 class="fact-title reveal">You are, precisely</h2>
+    <div class="bignum" id="daysCount" data-countup="0">0</div>
+    <div class="bignum-label">days old</div>
+    <div class="chipline reveal" id="basicsChips"></div>
+    <div class="mini-grid" id="basicsGrid"></div>
+  </section>
+
+  <section class="fact" id="sec-lifeweeks" data-accent="#9b8cff" data-nav="Life in weeks">
+    <span class="eyebrow"><span class="idx">02</span> LIFE IN WEEKS</span>
+    <h2 class="fact-title reveal">Your life, one square per week</h2>
+    <p class="fact-sub reveal" id="lifeweeksSub">Each square is a week. Filled squares are behind you.</p>
+    <div class="lifegrid-wrap">
+      <div class="lifegrid-legend">
+        <span><i class="sw sw-lived"></i> Lived</span>
+        <span id="legendBonus" class="legend-bonus"><i class="sw sw-bonus"></i> Bonus time</span>
+        <span><i class="sw sw-ahead"></i> Ahead of you</span>
+      </div>
+      <div class="lifegrid" id="lifeGrid"></div>
+    </div>
+    <div class="lifebar-wrap">
+      <div class="lifebar"><div class="lifebar-fill" id="lifebarFill"></div></div>
+      <div class="lifebar-label" id="lifebarLabel">0% of an average lifespan</div>
+    </div>
+  </section>
+
+  <section class="fact" id="sec-animals" data-accent="#4ecca3" data-nav="Animal kingdom">
+    <span class="eyebrow"><span class="idx">03</span> THE ANIMAL KINGDOM</span>
+    <h2 class="fact-title reveal">How you stack up against nature</h2>
+    <div class="card-grid" id="animalGrid"></div>
+  </section>
+
+  <section class="fact" id="sec-legends" data-accent="#c98ba0" data-nav="Borrowed time">
+    <span class="eyebrow"><span class="idx">04</span> GONE TOO SOON</span>
+    <h2 class="fact-title reveal">Borrowed time</h2>
+    <p class="fact-sub reveal">Some of history's brightest lives were astonishingly short. Here's where you stand.</p>
+    <div class="card-grid" id="legendGrid"></div>
+  </section>
+
+  <section class="fact" id="sec-cosmic" data-accent="#4fb8ff" data-nav="Around the sun">
+    <span class="eyebrow"><span class="idx">05</span> AROUND THE SUN</span>
+    <h2 class="fact-title reveal">You are, technically, an astronaut</h2>
+    <div class="bignum" id="orbitsCount" data-countup="0">0</div>
+    <div class="bignum-label">trips around the sun</div>
+    <div class="mini-grid" id="cosmicGrid"></div>
+  </section>
+
+  <section class="fact" id="sec-planets" data-accent="#ff7a45" data-nav="Other worlds">
+    <span class="eyebrow"><span class="idx">06</span> LIFE ON OTHER WORLDS</span>
+    <h2 class="fact-title reveal">Your age, planet by planet</h2>
+    <p class="fact-sub reveal">A "year" is just how long a planet takes to loop the sun. Here's how old that makes you elsewhere.</p>
+    <div class="orbit-row" id="planetRow"></div>
+  </section>
+
+  <section class="fact" id="sec-body" data-accent="#ff5c8a" data-nav="Body odometer">
+    <span class="eyebrow"><span class="idx">07</span> YOUR BODY'S ODOMETER</span>
+    <h2 class="fact-title reveal">What your body's been quietly doing</h2>
+    <div class="card-grid" id="bodyGrid"></div>
+  </section>
+
+  <section class="fact" id="sec-calendar" data-accent="#c4d600" data-nav="Calendar quirks">
+    <span class="eyebrow"><span class="idx">08</span> CALENDAR QUIRKS</span>
+    <h2 class="fact-title reveal">Small print of the calendar</h2>
+    <div class="card-grid" id="calendarGrid"></div>
+  </section>
+
+  <section class="fact" id="sec-milestones" data-accent="#22d3ee" data-nav="Checkpoints">
+    <span class="eyebrow"><span class="idx">09</span> CHECKPOINTS</span>
+    <h2 class="fact-title reveal">Dates you've already lived through, without knowing it</h2>
+    <p class="fact-sub reveal">Round numbers hiding in your timeline, plus the one birthday built just for you.</p>
+    <div class="timeline-wrap">
+      <div class="timeline" id="timeline"></div>
+    </div>
+    <div class="card-grid" id="milestoneGrid"></div>
+  </section>
+
+  <section class="fact" id="sec-deeptime" data-accent="#818cf8" data-nav="Scale of it all">
+    <span class="eyebrow"><span class="idx">10</span> THE SCALE OF IT ALL</span>
+    <h2 class="fact-title reveal">You, at the end of a very long walk</h2>
+    <p class="fact-sub reveal">Imagine the universe's entire 13.8-billion-year history laid out as a walk. Almost none of it is you. Here's exactly how much.</p>
+
+    <div class="vtimeline" id="deepTimeline"></div>
+
+    <div class="deeptime-callout">
+      <div class="bignum" id="hairWidth" data-countup="0" data-decimals="1">0</div>
+      <div class="bignum-label">micrometers, your entire life at the scale of the universe</div>
+      <p class="fact-footnote" id="hairCompare"></p>
+    </div>
+  </section>
+
+  <section class="fact share" id="sec-share" data-accent="#f4b942" data-nav="Your card">
+    <span class="eyebrow">YOUR CARD</span>
+    <h2 class="fact-title reveal">Take it with you</h2>
+    <canvas id="shareCanvas" width="1000" height="1400"></canvas>
+    <div class="share-actions">
+      <button id="downloadBtn">↓ Download card</button>
+      <button id="restartBtn" class="ghost">Try another date</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js?v=13"></script>
+</body>
+</html>
