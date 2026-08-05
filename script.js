@@ -14,6 +14,12 @@ const ICONS = {
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>`,
   calendarLoop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15.5a3 3 0 1 1 3 3"/><path d="M12 18.5l-1.4 1.3M12 18.5l1.4-1.4" stroke-width="1.3"/></svg>`,
   calendarStar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M12 13l1 2 2 .3-1.5 1.4.4 2-1.9-1-1.9 1 .4-2L9 15.3l2-.3 1-2z"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
+  hourglass: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/></svg>`,
+  users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg>`,
+  rocket: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c3 2 4 6 4 10 0 3-1 6-4 10-3-4-4-7-4-10 0-4 1-8 4-10z"/><circle cx="12" cy="9" r="1.6"/><path d="M8 16l-3 4M16 16l3 4M9 19h6"/></svg>`,
+  orbit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="9" ry="4.5"/><circle cx="19.5" cy="10.5" r="1.7" fill="currentColor" stroke="none"/></svg>`,
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>`,
 };
 
 const icon = (name) => ICONS[name] || "";
@@ -97,14 +103,16 @@ const LEGENDS = [
   { name: "Lou Gehrig", birth: "1903-06-19", death: "1941-06-02", role: "Athlete" },
 ];
 
+// diameterKm is each planet's real equatorial diameter, used to size its dot
+// to scale rather than drawing every planet the same size.
 const PLANETS = [
-  { name: "Mercury", orbitDays: 87.97, color: "#b9a184" },
-  { name: "Venus", orbitDays: 224.7, color: "#e0c28c" },
-  { name: "Mars", orbitDays: 686.98, color: "#c1552c" },
-  { name: "Jupiter", orbitDays: 4332.59, color: "#d9b38c" },
-  { name: "Saturn", orbitDays: 10759.22, color: "#e3d1a3" },
-  { name: "Uranus", orbitDays: 30688.5, color: "#9fd6e0" },
-  { name: "Neptune", orbitDays: 60182.0, color: "#5b7fd9" },
+  { name: "Mercury", orbitDays: 87.97, color: "#b9a184", diameterKm: 4879 },
+  { name: "Venus", orbitDays: 224.7, color: "#e0c28c", diameterKm: 12104 },
+  { name: "Mars", orbitDays: 686.98, color: "#c1552c", diameterKm: 6779 },
+  { name: "Jupiter", orbitDays: 4332.59, color: "#d9b38c", diameterKm: 139820 },
+  { name: "Saturn", orbitDays: 10759.22, color: "#e3d1a3", diameterKm: 116460 },
+  { name: "Uranus", orbitDays: 30688.5, color: "#9fd6e0", diameterKm: 50724 },
+  { name: "Neptune", orbitDays: 60182.0, color: "#5b7fd9", diameterKm: 49244 },
 ];
 
 const ZODIAC = [
@@ -385,7 +393,8 @@ function initScrollFx() {
           el.style.transitionDelay = Math.min(i * 0.6, 400) + "ms";
         });
         entry.target.querySelectorAll("[data-target]").forEach(el => {
-          requestAnimationFrame(() => { el.style.width = el.dataset.target; });
+          const prop = el.dataset.targetProp || "width";
+          requestAnimationFrame(() => { el.style[prop] = el.dataset.target; });
         });
         document.querySelectorAll(".rail-dot").forEach(d => {
           d.classList.toggle("active", d.dataset.target === entry.target.id);
@@ -507,6 +516,14 @@ function computeAndRender(birth) {
   let nextBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
   if (nextBirthday < now) nextBirthday.setFullYear(now.getFullYear() + 1);
   const daysToNextBirthday = Math.max(1, daysBetween(now, nextBirthday));
+  const lastBirthday = new Date(nextBirthday);
+  lastBirthday.setFullYear(nextBirthday.getFullYear() - 1);
+  const birthdayCycleDays = daysBetween(lastBirthday, nextBirthday);
+  const sinceLastBirthday = daysBetween(lastBirthday, now);
+  const birthdayYearFraction = Math.min(1, Math.max(0, sinceLastBirthday / birthdayCycleDays));
+  const RING_R = 42;
+  const RING_CIRC = 2 * Math.PI * RING_R;
+  const ringOffset = RING_CIRC * (1 - birthdayYearFraction);
 
   // Seed off the calendar date (not the year) so the mix feels tied to
   // "this kind of birthday" while still varying widely person to person.
@@ -519,19 +536,32 @@ function computeAndRender(birth) {
 
   // ---- Basics ----
   document.getElementById("daysCount").dataset.countup = days;
-  document.getElementById("basicsChips").innerHTML = `
-    <span class="chip">Born a <b>${bornWeekday}</b></span>
-    <span class="chip">${zodiac.icon} <b>${zodiac.name}</b></span>
-    <span class="chip"><b>${fmt(years, 1)}</b> years old</span>
-    <span class="chip"><b>${generation}</b></span>
-    <span class="chip">Chinese zodiac: <b>${chineseZodiac}</b></span>
-  `;
+  document.getElementById("basicsChips").innerHTML = [
+    ["calendar", `Born a <b>${bornWeekday}</b>`],
+    [null, `<b>${zodiac.name}</b>`, zodiac.icon],
+    ["hourglass", `<b>${fmt(years, 1)}</b> years old`],
+    ["users", `<b>${generation}</b>`],
+    ["paw", `Chinese zodiac: <b>${chineseZodiac}</b>`],
+  ].map(([ic, text, glyph]) => `<span class="icon-badge">
+    <span class="icon-badge-icon${glyph ? " zodiac-glyph" : ""}">${glyph || icon(ic)}</span>
+    <span class="icon-badge-text">${text}</span>
+  </span>`).join("");
+
   document.getElementById("basicsGrid").innerHTML = [
     [fmt(weeks), "Weeks"],
     [fmt(months, 1), "Months"],
     [fmt(seasonsLived), "Seasons lived"],
-    [fmt(daysToNextBirthday), "Days to next birthday"],
-  ].map(([v, l]) => `<div class="mini-cell"><span class="v">${v}</span><span class="l">${l}</span></div>`).join("");
+  ].map(([v, l]) => `<div class="mini-cell"><span class="v">${v}</span><span class="l">${l}</span></div>`).join("") + `
+    <div class="mini-cell ring-cell">
+      <svg class="ring-svg" viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="${RING_R}"></circle>
+        <circle class="ring-fg" cx="50" cy="50" r="${RING_R}" stroke-dasharray="${RING_CIRC}" style="stroke-dashoffset:${RING_CIRC}px" data-target="${ringOffset}px" data-target-prop="strokeDashoffset"></circle>
+      </svg>
+      <div class="ring-center">
+        <span class="ring-value">${fmt(daysToNextBirthday)}</span>
+        <span class="ring-label">days to birthday</span>
+      </div>
+    </div>`;
 
   // ---- Life in weeks grid ----
   const avgWeeks = Math.round(AVG_LIFESPAN_DAYS / 7);
@@ -562,13 +592,29 @@ function computeAndRender(birth) {
     : `${fmt(weeksLived)} of ~${fmt(avgWeeks)} weeks, if life runs to the global average.`;
 
   // ---- Animals ----
+  const VS_TRACK_PX = 70;
   document.getElementById("animalGrid").innerHTML = pickedAnimals.map(a => {
     const diff = days - a.days;
     const verb = diff >= 0 ? "more" : "fewer";
+    const maxVal = Math.max(days, a.days);
+    const youPx = Math.max(4, Math.round((days / maxVal) * VS_TRACK_PX));
+    const animalPx = Math.max(4, Math.round((a.days / maxVal) * VS_TRACK_PX));
     return `<div class="fcard">
       <span class="icon">${icon(a.icon)}</span>
       <span class="stat">${fmt(Math.abs(diff))} days ${verb}</span>
       <span class="name">than an average ${a.name}'s lifespan</span>
+      <div class="vs-chart">
+        <div class="vs-col">
+          <span class="vs-value">${fmt(days)}d</span>
+          <div class="vs-track"><div class="vs-bar you" style="height:${youPx}px"></div></div>
+          <span class="vs-label">You</span>
+        </div>
+        <div class="vs-col">
+          <span class="vs-value">${fmt(a.days)}d</span>
+          <div class="vs-track"><div class="vs-bar them" style="height:${animalPx}px"></div></div>
+          <span class="vs-label">${a.name}</span>
+        </div>
+      </div>
       <p class="desc">${a.note}</p>
     </div>`;
   }).join("");
@@ -611,17 +657,21 @@ function computeAndRender(birth) {
   const auTraveled = totalKm / AU_KM;
   const moonsWitnessed = Math.floor(days / LUNAR_CYCLE_DAYS);
   document.getElementById("cosmicGrid").innerHTML = [
-    [fmt(totalKm / 1e9, 2) + "B km", "Traveled through space"],
-    [fmt(moonTrips, 1) + "x", "Round trips to the Moon"],
-    [fmt(auTraveled, 1), "Astronomical Units covered"],
-    [fmt(moonsWitnessed), "Full lunar cycles"],
-  ].map(([v, l]) => `<div class="mini-cell"><span class="v">${v}</span><span class="l">${l}</span></div>`).join("");
+    ["rocket", fmt(totalKm / 1e9, 2) + "B km", "Traveled through space", "At Earth's orbital speed, plus the Sun's own trip around the galaxy."],
+    ["orbit", fmt(moonTrips, 1) + "x", "Round trips to the Moon", "Round-trip distance, not a straight line."],
+    ["sun", fmt(auTraveled, 1), "Astronomical Units covered", "1 AU is the distance from Earth to the Sun."],
+    ["moon", fmt(moonsWitnessed), "Full lunar cycles", "About one every 29.5 days."],
+  ].map(([ic, v, l, d]) => `<div class="fcard"><span class="icon">${icon(ic)}</span><span class="stat">${v}</span><span class="name">${l}</span><p class="desc">${d}</p></div>`).join("");
 
   // ---- Planets ----
+  const DOT_MIN_PX = 18, DOT_MAX_PX = 64;
+  const diameters = PLANETS.map(p => p.diameterKm);
+  const minD = Math.min(...diameters), maxD = Math.max(...diameters);
   document.getElementById("planetRow").innerHTML = PLANETS.map(p => {
     const age = days / p.orbitDays;
+    const sizePx = DOT_MIN_PX + ((p.diameterKm - minD) / (maxD - minD)) * (DOT_MAX_PX - DOT_MIN_PX);
     return `<div class="planet">
-      <div class="dot" style="background:${p.color}; box-shadow:0 0 24px ${p.color}88;"></div>
+      <div class="dot" style="width:${sizePx}px; height:${sizePx}px; background:${p.color}; box-shadow:0 0 ${Math.round(sizePx * 0.7)}px ${p.color}88;"></div>
       <span class="age">${fmt(age, age < 10 ? 1 : 0)}</span>
       <span class="unit">${p.name.toLowerCase()} years old</span>
       <span class="pname">${p.name}</span>
@@ -633,20 +683,93 @@ function computeAndRender(birth) {
   const breaths = days * 16 * 60 * 24;
   const blinks = days * 14400;
   const sleepDays = days / 3;
-  document.getElementById("bodyGrid").innerHTML = [
-    ["heartbeat", fmt(heartbeats), "Heartbeats", "At a resting ~80 bpm."],
-    ["wind", fmt(breaths), "Breaths taken", "At ~16 breaths per minute."],
-    ["eye", fmt(blinks), "Blinks", "At ~15 blinks/min while awake."],
-    ["moon", fmt(sleepDays), "Days asleep", "Assuming 8 hours a night."],
-  ].map(([ic, v, l, d]) => `<div class="fcard"><span class="icon">${icon(ic)}</span><span class="stat">${v}</span><span class="name">${l}</span><p class="desc">${d}</p></div>`).join("");
+
+  const bodyStats = [
+    ["heartbeat", heartbeats, "Heartbeats", "At a resting ~80 bpm."],
+    ["wind", breaths, "Breaths taken", "At ~16 breaths per minute."],
+    ["eye", blinks, "Blinks", "At ~15 blinks/min while awake."],
+    ["moon", sleepDays, "Days asleep", "Assuming 8 hours a night."],
+  ];
+
+  const BODY_DOT_MIN_PX = 60, BODY_DOT_MAX_PX = 140;
+  const bodyValues = bodyStats.map(s => s[1]);
+  const minBody = Math.min(...bodyValues), maxBody = Math.max(...bodyValues);
+
+  document.getElementById("bodyGrid").innerHTML = bodyStats.map(([ic, v, l, d]) => {
+    const sizePx = BODY_DOT_MIN_PX + ((v - minBody) / (maxBody - minBody)) * (BODY_DOT_MAX_PX - BODY_DOT_MIN_PX);
+    const glowPx = Math.round(sizePx * 0.6);
+    return `<div class="body-dot-card">
+      <div class="body-dot" style="width:${sizePx}px; height:${sizePx}px; box-shadow:0 0 ${glowPx}px var(--accent)66;">
+        <span class="body-dot-icon">${icon(ic)}</span>
+      </div>
+      <span class="body-stat">${fmt(v)}</span>
+      <span class="body-label">${l}</span>
+      <p class="body-desc">${d}</p>
+    </div>`;
+  }).join("");
 
   // ---- Calendar quirks ----
   const leapDays = countLeapDaysLived(birth, now);
   const fridays13 = countFridays13th(birth, now);
-  document.getElementById("calendarGrid").innerHTML = [
-    ["calendarLoop", fmt(leapDays), "Leap days lived through", "Feb 29ths you've actually seen."],
-    ["calendarStar", fmt(fridays13), "Friday the 13ths survived", "And you're still here."],
-  ].map(([ic, v, l, d]) => `<div class="fcard"><span class="icon">${icon(ic)}</span><span class="stat">${v}</span><span class="name">${l}</span><p class="desc">${d}</p></div>`).join("");
+
+  function renderCalendarViz(icon_name, count, label, desc, isLeap) {
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const dayNames = ["S","M","T","W","T","F","S"];
+
+    // Generate 3 mini calendars showing examples of these rare dates
+    let calendars = "";
+    let exampleCount = 0;
+    for (let y = birth.getFullYear(); y <= now.getFullYear() && exampleCount < 3; y++) {
+      if (isLeap) {
+        // Show February for leap days
+        const feb29 = new Date(y, 1, 29);
+        if (feb29.getMonth() === 1 && feb29 <= now && feb29 >= birth) {
+          const monthStart = new Date(y, 1, 1);
+          const daysInMonth = 29; // Feb in leap year
+          const startDay = monthStart.getDay();
+          let dayHtml = "";
+          for (let i = 0; i < startDay; i++) dayHtml += `<div class="cal-empty"></div>`;
+          for (let d = 1; d <= daysInMonth; d++) {
+            const isSpecial = d === 29 ? "cal-special" : "";
+            dayHtml += `<div class="cal-day ${isSpecial}">${d}</div>`;
+          }
+          calendars += `<div class="mini-cal"><div class="cal-header">${monthNames[1]} ${y}</div><div class="cal-grid">${dayHtml}</div></div>`;
+          exampleCount++;
+        }
+      } else {
+        // Show months with Friday the 13th
+        const the13th = new Date(y, 0, 13);
+        for (let m = 0; m < 12; m++) {
+          const testDate = new Date(y, m, 13);
+          if (testDate.getDay() === 5 && testDate <= now && testDate >= birth && exampleCount < 3) {
+            const monthStart = new Date(y, m, 1);
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            const startDay = monthStart.getDay();
+            let dayHtml = "";
+            for (let i = 0; i < startDay; i++) dayHtml += `<div class="cal-empty"></div>`;
+            for (let d = 1; d <= daysInMonth; d++) {
+              const isSpecial = d === 13 ? "cal-special" : "";
+              dayHtml += `<div class="cal-day ${isSpecial}">${d}</div>`;
+            }
+            calendars += `<div class="mini-cal"><div class="cal-header">${monthNames[m]} ${y}</div><div class="cal-grid">${dayHtml}</div></div>`;
+            exampleCount++;
+          }
+        }
+      }
+    }
+
+    return `<div class="calendar-card">
+      <div class="cal-stat">${fmt(count)}</div>
+      <div class="cal-label">${label}</div>
+      <div class="cal-minis">${calendars}</div>
+      <p class="cal-desc">${desc}</p>
+    </div>`;
+  }
+
+  document.getElementById("calendarGrid").innerHTML = `
+    ${renderCalendarViz("calendarLoop", leapDays, "Leap days lived through", "Feb 29ths you've actually seen.", true)}
+    ${renderCalendarViz("calendarStar", fridays13, "Friday the 13ths survived", "And you're still here.", false)}
+  `;
 
   // ---- Checkpoints (milestone days + golden birthday) ----
   let nextMarked = false;
@@ -688,24 +811,49 @@ function computeAndRender(birth) {
     </div>
   `;
 
-  // Detail cards
+  // Detail cards with progress rings
+  const MILESTONE_RING_R = 40;
+  const MILESTONE_RING_CIRC = 2 * Math.PI * MILESTONE_RING_R;
+
   const milestoneCards = milestones.map(({ m, hit, achieved, isNext }) => {
+    const progressFrac = m / trackMax;
+    const ringOffset = MILESTONE_RING_CIRC * (1 - progressFrac);
     const tag = isNext ? `<span class="tag">Next up</span>` : "";
     const desc = achieved
       ? `You crossed this on ${formatDate(hit)}.`
       : `Arrives ${formatDate(hit)}, in ${fmt(daysBetween(now, hit))} days.`;
-    return `<div class="fcard${isNext ? " next" : ""}">${tag}
-      <span class="stat">Day ${fmt(m)}</span>
-      <span class="name">${achieved ? "reached" : "upcoming"}</span>
-      <p class="desc">${desc}</p>
+    const statusClass = achieved ? "reached" : isNext ? "next" : "future";
+    return `<div class="milestone-card ${statusClass}">${tag}
+      <div class="milestone-ring">
+        <svg class="milestone-svg" viewBox="0 0 100 100">
+          <circle class="ring-bg" cx="50" cy="50" r="${MILESTONE_RING_R}"></circle>
+          <circle class="ring-fg" cx="50" cy="50" r="${MILESTONE_RING_R}" stroke-dasharray="${MILESTONE_RING_CIRC}" style="stroke-dashoffset:${MILESTONE_RING_CIRC}px" data-target="${ringOffset}px" data-target-prop="strokeDashoffset"></circle>
+        </svg>
+        <div class="milestone-center">
+          <span class="milestone-value">${m >= 1000 ? (m / 1000).toFixed(1) + "K" : fmt(m)}</span>
+          <span class="milestone-unit">days</span>
+        </div>
+      </div>
+      <span class="milestone-status">${achieved ? "reached" : "upcoming"}</span>
+      <p class="milestone-desc">${desc}</p>
     </div>`;
   });
 
-  const goldenCard = `<div class="fcard">
-    <span class="tag tag-static">Golden birthday</span>
-    <span class="stat">Turning ${fmt(goldenAge)}</span>
-    <span class="name">${goldenAchieved ? "already happened" : "still ahead"}</span>
-    <p class="desc">${goldenAchieved
+  const goldenRingProgress = goldenDays / trackMax;
+  const goldenRingOffset = MILESTONE_RING_CIRC * (1 - goldenRingProgress);
+  const goldenCard = `<div class="milestone-card ${goldenAchieved ? "reached" : "future"}">
+    <span class="tag tag-static">Golden</span>
+    <div class="milestone-ring">
+      <svg class="milestone-svg" viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="${MILESTONE_RING_R}"></circle>
+        <circle class="ring-fg" cx="50" cy="50" r="${MILESTONE_RING_R}" stroke-dasharray="${MILESTONE_RING_CIRC}" style="stroke-dashoffset:${MILESTONE_RING_CIRC}px" data-target="${goldenRingOffset}px" data-target-prop="strokeDashoffset"></circle>
+      </svg>
+      <div class="milestone-center">
+        <span class="milestone-value">Turning ${fmt(goldenAge)}</span>
+      </div>
+    </div>
+    <span class="milestone-status">${goldenAchieved ? "already happened" : "still ahead"}</span>
+    <p class="milestone-desc">${goldenAchieved
       ? `On ${formatDate(goldenDate)}, your age caught up with your birth date: you turned ${fmt(goldenAge)} on the ${fmt(goldenAge)}${goldenAge === 1 ? "st" : goldenAge === 2 ? "nd" : goldenAge === 3 ? "rd" : "th"} of the month.`
       : `On ${formatDate(goldenDate)}, your age will catch up with your birth date: you'll turn ${fmt(goldenAge)} on the ${fmt(goldenAge)}${goldenAge === 1 ? "st" : goldenAge === 2 ? "nd" : goldenAge === 3 ? "rd" : "th"} of the month.`}</p>
   </div>`;
@@ -819,8 +967,8 @@ async function drawShareCard(data) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  const glow = ctx.createRadialGradient(W/2, H*0.16, 20, W/2, H*0.16, W*0.9);
-  glow.addColorStop(0, accent + "3a");
+  const glow = ctx.createRadialGradient(W/2, H*0.2, 20, W/2, H*0.2, W*1.2);
+  glow.addColorStop(0, accent + "4a");
   glow.addColorStop(1, "transparent");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
@@ -835,81 +983,220 @@ async function drawShareCard(data) {
   }
   ctx.globalAlpha = 1;
 
-  // frame with corner ticks
-  ctx.strokeStyle = accent + "aa";
+  // frame
+  ctx.strokeStyle = accent + "88";
   ctx.lineWidth = 2;
   ctx.strokeRect(36, 36, W - 72, H - 72);
-  ctx.strokeStyle = accent + "44";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(46, 46, W - 92, H - 92);
 
   ctx.textAlign = "center";
 
-  // eyebrow
+  // eyebrow + header
   ctx.fillStyle = accent;
-  ctx.font = "700 22px 'Space Mono'";
-  ctx.fillText("E P O C H", W / 2, 116);
-
-  // constellation
-  drawConstellation(ctx, { x: 250, y: 150, w: 500, h: 250 }, data.zodiacIndex, accent);
-
   ctx.font = "700 26px 'Space Mono'";
+  ctx.fillText("E P O C H", W / 2, 100);
+
+  // Large constellation background (prominent, but kept above the divider so
+  // it doesn't muddy the big number/stats below)
+  ctx.globalAlpha = 0.55;
+  drawConstellation(ctx, { x: 50, y: 40, w: 900, h: 380 }, data.zodiacIndex, accent);
+  ctx.globalAlpha = 1;
+
+  // Colored accent bar behind ring
+  const barGradient = ctx.createLinearGradient(0, 200, 0, 350);
+  barGradient.addColorStop(0, accent + "15");
+  barGradient.addColorStop(0.5, accent + "25");
+  barGradient.addColorStop(1, accent + "15");
+  ctx.fillStyle = barGradient;
+  ctx.fillRect(0, 200, W, 150);
+
+  // Life progress ring (visual element #1) - larger
+  const ringCx = W / 2, ringCy = 240;
+  const ringR = 80;
+  const ringCirc = 2 * Math.PI * ringR;
+  const lifeProgressFrac = Math.min(1, data.days / (73 * 365.25)); // % of avg lifespan
+  const ringOffset = ringCirc * (1 - lifeProgressFrac);
+
+  // Ring background
+  ctx.strokeStyle = "rgba(255,255,255,0.1)";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(ringCx, ringCy, ringR, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Ring progress
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 8;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.arc(ringCx, ringCy, ringR, -Math.PI / 2, -Math.PI / 2 + (lifeProgressFrac * 2 * Math.PI));
+  ctx.stroke();
+
+  // Center text in ring
+  ctx.font = "700 48px 'Fraunces'";
   ctx.fillStyle = "#f3ede1";
-  ctx.fillText(data.zodiac.name.toUpperCase(), W / 2, 450);
-  ctx.font = "400 18px 'Space Mono'";
+  ctx.textAlign = "center";
+  ctx.fillText(fmt(data.years, 1), ringCx, ringCy + 12);
+  ctx.font = "700 16px 'Space Mono'";
   ctx.fillStyle = accent;
-  ctx.fillText(`BORN A ${data.bornWeekday.toUpperCase()}`, W / 2, 480);
+  ctx.fillText("YEARS OLD", ringCx, ringCy + 35);
+
+  // Zodiac + weekday below ring
+  ctx.font = "700 20px 'Space Mono'";
+  ctx.fillStyle = "#f3ede1";
+  ctx.fillText(data.zodiac.name.toUpperCase(), W / 2, 380);
+  ctx.font = "400 14px 'Space Mono'";
+  ctx.fillStyle = accent;
+  ctx.fillText(`BORN A ${data.bornWeekday.toUpperCase()}`, W / 2, 405);
 
   // divider
-  ctx.strokeStyle = "#f3ede122";
+  ctx.strokeStyle = accent + "55";
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(150, 520);
-  ctx.lineTo(W - 150, 520);
+  ctx.moveTo(120, 440);
+  ctx.lineTo(W - 120, 440);
   ctx.stroke();
 
-  // big number, auto-shrunk to fit
-  drawFittedText(ctx, fmt(data.days), W / 2, 690, W - 180, {
-    family: "Fraunces", weight: 900, startSize: 190, minSize: 90, color: "#f3ede1",
+  // BIG days number
+  drawFittedText(ctx, fmt(data.days), W / 2, 540, W - 180, {
+    family: "Fraunces", weight: 900, startSize: 140, minSize: 80, color: "#f3ede1",
   });
-  ctx.font = "500 32px 'Space Mono'";
+  ctx.font = "600 24px 'Space Mono'";
   ctx.fillStyle = accent;
-  ctx.fillText("DAYS ALIVE", W / 2, 745);
+  ctx.fillText("DAYS ALIVE", W / 2, 575);
 
-  ctx.strokeStyle = "#f3ede122";
+  // Large stat boxes (3 per row, 2 rows)
+  const statsX = 60, statsY = 605;
+  const statBoxW = (W - 120) / 3, statBoxH = 70;
+  const statGap = 10;
+  const statColors = [
+    { bg: "rgba(75, 204, 163, 0.15)", stroke: "#4bccA3" },    // green
+    { bg: "rgba(155, 140, 255, 0.15)", stroke: "#9b8cff" },   // purple
+    { bg: "rgba(79, 184, 255, 0.15)", stroke: "#4fb8ff" },    // blue
+    { bg: "rgba(255, 106, 91, 0.15)", stroke: "#ff6b5b" },    // red
+    { bg: "rgba(244, 185, 66, 0.15)", stroke: "#f4b942" },    // gold
+  ];
+
+  // Calculate additional stats
+  const heartbeats = data.days * 80 * 60 * 24;
+  const orbits = Math.floor(data.years);
+
+  const stats = [
+    { value: fmt(data.years, 1), label: "YEARS", color: 0 },
+    { value: fmt(data.weeks), label: "WEEKS", color: 1 },
+    { value: fmt(orbits), label: "ORBITS", color: 2 },
+    { value: fmt(heartbeats / 1e9, 1) + "B", label: "HEARTBEATS", color: 3 },
+    { value: fmt(data.marsAge, 1), label: "MARS YEARS", color: 4 },
+  ];
+
+  stats.forEach((stat, idx) => {
+    const row = Math.floor(idx / 3);
+    const col = idx % 3;
+    const x = statsX + col * (statBoxW + statGap);
+    const y = statsY + row * (statBoxH + statGap);
+    const c = statColors[stat.color];
+
+    ctx.fillStyle = c.bg;
+    ctx.fillRect(x, y, statBoxW, statBoxH);
+    ctx.strokeStyle = c.stroke;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, statBoxW, statBoxH);
+
+    ctx.font = "700 22px 'Fraunces'";
+    ctx.fillStyle = c.stroke;
+    ctx.textAlign = "center";
+    ctx.fillText(stat.value, x + statBoxW/2, y + 35);
+
+    ctx.font = "600 11px 'Space Mono'";
+    ctx.fillStyle = c.stroke;
+    ctx.fillText(stat.label, x + statBoxW/2, y + 55);
+  });
+
+  // ---- "You vs Animal" bar comparison (fills the middle-lower section) ----
+  const vsSectionY = 800;
+  ctx.font = "700 16px 'Space Mono'";
+  ctx.fillStyle = "#f3ede1cc";
+  ctx.textAlign = "center";
+  ctx.fillText(`YOU VS. AN AVERAGE ${data.animal.name.toUpperCase()}`, W / 2, vsSectionY);
+
+  const barsY = vsSectionY + 40;
+  const barMaxW = W - 200;
+  const barX = 100;
+  const barH = 34;
+  const barGap = 22;
+  const maxVal = Math.max(data.days, data.animal.days);
+  const youBarW = Math.max(20, (data.days / maxVal) * barMaxW);
+  const animalBarW = Math.max(20, (data.animal.days / maxVal) * barMaxW);
+
+  // "You" bar
+  ctx.fillStyle = "#f3ede199";
+  ctx.font = "600 14px 'Space Mono'";
+  ctx.textAlign = "left";
+  ctx.fillText("YOU", barX, barsY - 8);
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  ctx.fillRect(barX, barsY, barMaxW, barH);
+  const youGrad = ctx.createLinearGradient(barX, 0, barX + youBarW, 0);
+  youGrad.addColorStop(0, accent);
+  youGrad.addColorStop(1, accent + "cc");
+  ctx.fillStyle = youGrad;
+  ctx.fillRect(barX, barsY, youBarW, barH);
+  ctx.font = "700 16px 'Space Mono'";
+  ctx.fillStyle = "#0a0a12";
+  ctx.textAlign = "right";
+  ctx.fillText(fmt(data.days) + "d", barX + youBarW - 12, barsY + 23);
+
+  // "Animal" bar
+  const animalBarY = barsY + barH + barGap;
+  ctx.fillStyle = "#f3ede199";
+  ctx.font = "600 14px 'Space Mono'";
+  ctx.textAlign = "left";
+  ctx.fillText(data.animal.name.toUpperCase(), barX, animalBarY - 8);
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  ctx.fillRect(barX, animalBarY, barMaxW, barH);
+  ctx.fillStyle = "#9b8cff";
+  ctx.fillRect(barX, animalBarY, animalBarW, barH);
+  ctx.font = "700 16px 'Space Mono'";
+  ctx.fillStyle = "#0a0a12";
+  ctx.textAlign = "right";
+  ctx.fillText(fmt(data.animal.days) + "d", barX + animalBarW - 12, animalBarY + 23);
+
+  // ---- Life progress bar (% of average global lifespan) ----
+  const lifeBarSectionY = animalBarY + barH + 70;
+  ctx.font = "700 16px 'Space Mono'";
+  ctx.fillStyle = "#f3ede1cc";
+  ctx.textAlign = "center";
+  ctx.fillText("LIFE PROGRESS", W / 2, lifeBarSectionY);
+
+  const lifeBarY = lifeBarSectionY + 30;
+  const lifeBarH = 28;
+  const lifePct = Math.min(1, data.days / (73 * 365.25));
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  ctx.fillRect(barX, lifeBarY, barMaxW, lifeBarH);
+  const lifeGrad = ctx.createLinearGradient(barX, 0, barX + barMaxW, 0);
+  lifeGrad.addColorStop(0, "#4fb8ff");
+  lifeGrad.addColorStop(1, accent);
+  ctx.fillStyle = lifeGrad;
+  ctx.fillRect(barX, lifeBarY, barMaxW * lifePct, lifeBarH);
+  ctx.font = "600 14px 'Space Mono'";
+  ctx.fillStyle = accent;
+  ctx.textAlign = "center";
+  ctx.fillText(`${fmt(lifePct * 100, 1)}% of an average 73-year lifespan`, W / 2, lifeBarY + lifeBarH + 26);
+
+  // ---- Footer ----
+  ctx.strokeStyle = accent + "33";
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(150, 780);
-  ctx.lineTo(W - 150, 780);
+  ctx.moveTo(120, H - 130);
+  ctx.lineTo(W - 120, H - 130);
   ctx.stroke();
 
-  // stat tile grid
-  const animalDiff = data.days - data.animal.days;
-  const legendBirth = new Date(data.legend.birth), legendDeath = new Date(data.legend.death);
-  const legendDays = daysBetween(legendBirth, legendDeath);
-
-  const gx = 120, gy = 815, gw = W - 240, gh = 420, gap = 20;
-  const tileW = (gw - gap) / 2, tileH = (gh - gap) / 2;
-
-  drawStatTile(ctx, gx, gy, tileW, tileH, fmt(data.years, 1), "years old", accent);
-  drawStatTile(ctx, gx + tileW + gap, gy, tileW, tileH, fmt(data.weeks), "weeks lived", accent);
-  drawStatTile(
-    ctx, gx, gy + tileH + gap, tileW, tileH,
-    (animalDiff >= 0 ? "+" : "-") + fmt(Math.abs(animalDiff)),
-    `days vs. ${data.animal.name}`, accent
-  );
-  drawStatTile(
-    ctx, gx + tileW + gap, gy + tileH + gap, tileW, tileH,
-    fmt(legendDays),
-    `${data.legend.name}'s lifespan (days)`, accent
-  );
-
-  ctx.font = "400 22px 'Space Mono'";
-  ctx.fillStyle = "#f3ede166";
+  ctx.font = "400 16px 'Space Mono'";
+  ctx.fillStyle = "#f3ede177";
   ctx.textAlign = "center";
-  ctx.fillText("EPOCH · YOUR LIFE, BY THE NUMBERS", W / 2, H - 100);
+  ctx.fillText("EPOCH · YOUR LIFE, BY THE NUMBERS", W / 2, H - 90);
 
-  ctx.font = "700 24px 'Space Mono'";
+  ctx.font = "700 18px 'Space Mono'";
   ctx.fillStyle = accent;
-  ctx.fillText("Get yours at https://epoch.snanu.com", W / 2, H - 68);
+  ctx.fillText("Get yours at https://epoch.snanu.com", W / 2, H - 50);
 }
 
 /* ============================= DATE INPUT (DD / MM / YYYY segments) ============================= */
