@@ -949,6 +949,11 @@ function drawStatTile(ctx, x, y, w, h, value, label, accent) {
   });
 }
 
+// The card is drawn at 1000x1400 but displayed on-screen as small as ~350px
+// wide on a phone (see #shareCanvas CSS) — a ~0.35x scale-down. Every font
+// size below is chosen so the *on-screen* result stays legible at that
+// scale (roughly: on-screen px ≈ canvas px * 0.35), not so it looks right
+// only when viewed at full canvas resolution.
 async function drawShareCard(data) {
   const canvas = document.getElementById("shareCanvas");
   const ctx = canvas.getContext("2d");
@@ -990,148 +995,135 @@ async function drawShareCard(data) {
 
   ctx.textAlign = "center";
 
-  // eyebrow + header
+  // header
   ctx.fillStyle = accent;
-  ctx.font = "700 26px 'Space Mono'";
-  ctx.fillText("E P O C H", W / 2, 100);
+  ctx.font = "700 40px 'Space Mono'";
+  ctx.fillText("E P O C H", W / 2, 96);
 
-  // Large constellation background (prominent, but kept above the divider so
-  // it doesn't muddy the big number/stats below)
+  // constellation backdrop, kept above the divider so it doesn't muddy text
   ctx.globalAlpha = 0.55;
-  drawConstellation(ctx, { x: 50, y: 40, w: 900, h: 380 }, data.zodiacIndex, accent);
+  drawConstellation(ctx, { x: 50, y: 40, w: 900, h: 340 }, data.zodiacIndex, accent);
   ctx.globalAlpha = 1;
 
-  // Colored accent bar behind ring
-  const barGradient = ctx.createLinearGradient(0, 200, 0, 350);
+  // colored accent bar behind ring
+  const barGradient = ctx.createLinearGradient(0, 180, 0, 340);
   barGradient.addColorStop(0, accent + "15");
   barGradient.addColorStop(0.5, accent + "25");
   barGradient.addColorStop(1, accent + "15");
   ctx.fillStyle = barGradient;
-  ctx.fillRect(0, 200, W, 150);
+  ctx.fillRect(0, 180, W, 160);
 
-  // Life progress ring (visual element #1) - larger
-  const ringCx = W / 2, ringCy = 240;
-  const ringR = 80;
+  // life progress ring
+  const ringCx = W / 2, ringCy = 250;
+  const ringR = 95;
   const ringCirc = 2 * Math.PI * ringR;
   const lifeProgressFrac = Math.min(1, data.days / (73 * 365.25)); // % of avg lifespan
   const ringOffset = ringCirc * (1 - lifeProgressFrac);
 
-  // Ring background
   ctx.strokeStyle = "rgba(255,255,255,0.1)";
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 10;
   ctx.beginPath();
   ctx.arc(ringCx, ringCy, ringR, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Ring progress
   ctx.strokeStyle = accent;
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 10;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.arc(ringCx, ringCy, ringR, -Math.PI / 2, -Math.PI / 2 + (lifeProgressFrac * 2 * Math.PI));
   ctx.stroke();
 
-  // Center text in ring
-  ctx.font = "700 48px 'Fraunces'";
+  ctx.font = "700 66px 'Fraunces'";
   ctx.fillStyle = "#f3ede1";
   ctx.textAlign = "center";
-  ctx.fillText(fmt(data.years, 1), ringCx, ringCy + 12);
-  ctx.font = "700 16px 'Space Mono'";
+  ctx.fillText(fmt(data.years, 1), ringCx, ringCy + 18);
+  ctx.font = "700 24px 'Space Mono'";
   ctx.fillStyle = accent;
-  ctx.fillText("YEARS OLD", ringCx, ringCy + 35);
+  ctx.fillText("YEARS OLD", ringCx, ringCy + 48);
 
-  // Zodiac + weekday below ring
-  ctx.font = "700 20px 'Space Mono'";
+  // zodiac + weekday below ring
+  ctx.font = "700 36px 'Space Mono'";
   ctx.fillStyle = "#f3ede1";
-  ctx.fillText(data.zodiac.name.toUpperCase(), W / 2, 380);
-  ctx.font = "400 14px 'Space Mono'";
+  ctx.fillText(data.zodiac.name.toUpperCase(), W / 2, 405);
+  ctx.font = "500 24px 'Space Mono'";
   ctx.fillStyle = accent;
-  ctx.fillText(`BORN A ${data.bornWeekday.toUpperCase()}`, W / 2, 405);
+  ctx.fillText(`BORN A ${data.bornWeekday.toUpperCase()}`, W / 2, 440);
 
   // divider
   ctx.strokeStyle = accent + "55";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(120, 440);
-  ctx.lineTo(W - 120, 440);
+  ctx.moveTo(120, 475);
+  ctx.lineTo(W - 120, 475);
   ctx.stroke();
 
   // BIG days number
-  drawFittedText(ctx, fmt(data.days), W / 2, 540, W - 180, {
-    family: "Fraunces", weight: 900, startSize: 140, minSize: 80, color: "#f3ede1",
+  drawFittedText(ctx, fmt(data.days), W / 2, 610, W - 140, {
+    family: "Fraunces", weight: 900, startSize: 160, minSize: 90, color: "#f3ede1",
   });
-  ctx.font = "600 24px 'Space Mono'";
+  ctx.font = "700 32px 'Space Mono'";
   ctx.fillStyle = accent;
-  ctx.fillText("DAYS ALIVE", W / 2, 575);
+  ctx.fillText("DAYS ALIVE", W / 2, 656);
 
-  // Large stat boxes (3 per row, 2 rows)
-  const statsX = 60, statsY = 605;
-  const statBoxW = (W - 120) / 3, statBoxH = 70;
-  const statGap = 10;
+  // 3 large stat chips (bigger and fewer than before, so every number and
+  // label survives being shrunk to phone-screen size)
+  const statsY = 700;
+  const statBoxH = 150;
+  const statGap = 20;
+  const statBoxW = (W - 140 - statGap * 2) / 3;
   const statColors = [
-    { bg: "rgba(75, 204, 163, 0.15)", stroke: "#4bccA3" },    // green
-    { bg: "rgba(155, 140, 255, 0.15)", stroke: "#9b8cff" },   // purple
-    { bg: "rgba(79, 184, 255, 0.15)", stroke: "#4fb8ff" },    // blue
-    { bg: "rgba(255, 106, 91, 0.15)", stroke: "#ff6b5b" },    // red
-    { bg: "rgba(244, 185, 66, 0.15)", stroke: "#f4b942" },    // gold
+    { bg: "rgba(75, 204, 163, 0.15)", stroke: "#4bccA3" },   // green
+    { bg: "rgba(155, 140, 255, 0.15)", stroke: "#9b8cff" },  // purple
+    { bg: "rgba(79, 184, 255, 0.15)", stroke: "#4fb8ff" },   // blue
   ];
-
-  // Calculate additional stats
-  const heartbeats = data.days * 80 * 60 * 24;
   const orbits = Math.floor(data.years);
-
   const stats = [
     { value: fmt(data.years, 1), label: "YEARS", color: 0 },
     { value: fmt(data.weeks), label: "WEEKS", color: 1 },
     { value: fmt(orbits), label: "ORBITS", color: 2 },
-    { value: fmt(heartbeats / 1e9, 1) + "B", label: "HEARTBEATS", color: 3 },
-    { value: fmt(data.marsAge, 1), label: "MARS YEARS", color: 4 },
   ];
 
   stats.forEach((stat, idx) => {
-    const row = Math.floor(idx / 3);
-    const col = idx % 3;
-    const x = statsX + col * (statBoxW + statGap);
-    const y = statsY + row * (statBoxH + statGap);
+    const x = 70 + idx * (statBoxW + statGap);
     const c = statColors[stat.color];
 
     ctx.fillStyle = c.bg;
-    ctx.fillRect(x, y, statBoxW, statBoxH);
+    ctx.fillRect(x, statsY, statBoxW, statBoxH);
     ctx.strokeStyle = c.stroke;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x, y, statBoxW, statBoxH);
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x, statsY, statBoxW, statBoxH);
 
-    ctx.font = "700 22px 'Fraunces'";
+    drawFittedText(ctx, stat.value, x + statBoxW / 2, statsY + 85, statBoxW - 20, {
+      family: "Fraunces", weight: 700, startSize: 52, minSize: 30, color: c.stroke,
+    });
+    ctx.font = "700 20px 'Space Mono'";
     ctx.fillStyle = c.stroke;
     ctx.textAlign = "center";
-    ctx.fillText(stat.value, x + statBoxW/2, y + 35);
-
-    ctx.font = "600 11px 'Space Mono'";
-    ctx.fillStyle = c.stroke;
-    ctx.fillText(stat.label, x + statBoxW/2, y + 55);
+    ctx.fillText(stat.label, x + statBoxW / 2, statsY + 120);
   });
 
-  // ---- "You vs Animal" bar comparison (fills the middle-lower section) ----
-  const vsSectionY = 800;
-  ctx.font = "700 16px 'Space Mono'";
-  ctx.fillStyle = "#f3ede1cc";
-  ctx.textAlign = "center";
-  ctx.fillText(`YOU VS. AN AVERAGE ${data.animal.name.toUpperCase()}`, W / 2, vsSectionY);
+  // ---- "You vs Animal" bar comparison ----
+  const statsBottom = statsY + statBoxH;
+  const vsTitleY = statsBottom + 65;
+  drawFittedText(ctx, `YOU VS. AN AVERAGE ${data.animal.name.toUpperCase()}`, W / 2, vsTitleY, W - 140, {
+    family: "Space Mono", weight: 700, startSize: 26, minSize: 18, color: "#f3ede1cc",
+  });
 
-  const barsY = vsSectionY + 40;
-  const barMaxW = W - 200;
-  const barX = 100;
-  const barH = 34;
-  const barGap = 22;
+  const barX = 90;
+  const barMaxW = W - 180;
+  const barH = 54;
+  const barGap = 34;
   const maxVal = Math.max(data.days, data.animal.days);
-  const youBarW = Math.max(20, (data.days / maxVal) * barMaxW);
-  const animalBarW = Math.max(20, (data.animal.days / maxVal) * barMaxW);
+  const youBarW = Math.max(30, (data.days / maxVal) * barMaxW);
+  const animalBarW = Math.max(30, (data.animal.days / maxVal) * barMaxW);
+
+  const barsY = vsTitleY + 44;
 
   // "You" bar
-  ctx.fillStyle = "#f3ede199";
-  ctx.font = "600 14px 'Space Mono'";
+  ctx.font = "700 24px 'Space Mono'";
+  ctx.fillStyle = "#f3ede1cc";
   ctx.textAlign = "left";
-  ctx.fillText("YOU", barX, barsY - 8);
+  ctx.fillText("YOU", barX, barsY - 14);
   ctx.fillStyle = "rgba(255,255,255,0.08)";
   ctx.fillRect(barX, barsY, barMaxW, barH);
   const youGrad = ctx.createLinearGradient(barX, 0, barX + youBarW, 0);
@@ -1139,35 +1131,35 @@ async function drawShareCard(data) {
   youGrad.addColorStop(1, accent + "cc");
   ctx.fillStyle = youGrad;
   ctx.fillRect(barX, barsY, youBarW, barH);
-  ctx.font = "700 16px 'Space Mono'";
+  ctx.font = "700 26px 'Space Mono'";
   ctx.fillStyle = "#0a0a12";
   ctx.textAlign = "right";
-  ctx.fillText(fmt(data.days) + "d", barX + youBarW - 12, barsY + 23);
+  ctx.fillText(fmt(data.days) + "d", barX + youBarW - 16, barsY + 35);
 
   // "Animal" bar
   const animalBarY = barsY + barH + barGap;
-  ctx.fillStyle = "#f3ede199";
-  ctx.font = "600 14px 'Space Mono'";
+  ctx.font = "700 24px 'Space Mono'";
+  ctx.fillStyle = "#f3ede1cc";
   ctx.textAlign = "left";
-  ctx.fillText(data.animal.name.toUpperCase(), barX, animalBarY - 8);
+  ctx.fillText("THEM", barX, animalBarY - 14);
   ctx.fillStyle = "rgba(255,255,255,0.08)";
   ctx.fillRect(barX, animalBarY, barMaxW, barH);
   ctx.fillStyle = "#9b8cff";
   ctx.fillRect(barX, animalBarY, animalBarW, barH);
-  ctx.font = "700 16px 'Space Mono'";
+  ctx.font = "700 26px 'Space Mono'";
   ctx.fillStyle = "#0a0a12";
   ctx.textAlign = "right";
-  ctx.fillText(fmt(data.animal.days) + "d", barX + animalBarW - 12, animalBarY + 23);
+  ctx.fillText(fmt(data.animal.days) + "d", barX + animalBarW - 16, animalBarY + 35);
 
-  // ---- Life progress bar (% of average global lifespan) ----
-  const lifeBarSectionY = animalBarY + barH + 70;
-  ctx.font = "700 16px 'Space Mono'";
+  // ---- Life progress bar ----
+  const lifeTitleY = animalBarY + barH + 65;
+  ctx.font = "700 26px 'Space Mono'";
   ctx.fillStyle = "#f3ede1cc";
   ctx.textAlign = "center";
-  ctx.fillText("LIFE PROGRESS", W / 2, lifeBarSectionY);
+  ctx.fillText("LIFE PROGRESS", W / 2, lifeTitleY);
 
-  const lifeBarY = lifeBarSectionY + 30;
-  const lifeBarH = 28;
+  const lifeBarY = lifeTitleY + 30;
+  const lifeBarH = 40;
   const lifePct = Math.min(1, data.days / (73 * 365.25));
   ctx.fillStyle = "rgba(255,255,255,0.08)";
   ctx.fillRect(barX, lifeBarY, barMaxW, lifeBarH);
@@ -1176,27 +1168,23 @@ async function drawShareCard(data) {
   lifeGrad.addColorStop(1, accent);
   ctx.fillStyle = lifeGrad;
   ctx.fillRect(barX, lifeBarY, barMaxW * lifePct, lifeBarH);
-  ctx.font = "600 14px 'Space Mono'";
+  ctx.font = "700 24px 'Space Mono'";
   ctx.fillStyle = accent;
   ctx.textAlign = "center";
-  ctx.fillText(`${fmt(lifePct * 100, 1)}% of an average 73-year lifespan`, W / 2, lifeBarY + lifeBarH + 26);
+  ctx.fillText(`${fmt(lifePct * 100, 1)}% of an average 73-year lifespan`, W / 2, lifeBarY + lifeBarH + 40);
 
   // ---- Footer ----
   ctx.strokeStyle = accent + "33";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(120, H - 130);
-  ctx.lineTo(W - 120, H - 130);
+  ctx.moveTo(120, H - 110);
+  ctx.lineTo(W - 120, H - 110);
   ctx.stroke();
 
-  ctx.font = "400 16px 'Space Mono'";
-  ctx.fillStyle = "#f3ede177";
-  ctx.textAlign = "center";
-  ctx.fillText("EPOCH · YOUR LIFE, BY THE NUMBERS", W / 2, H - 90);
-
-  ctx.font = "700 18px 'Space Mono'";
+  ctx.font = "700 28px 'Space Mono'";
   ctx.fillStyle = accent;
-  ctx.fillText("Get yours at https://epoch.snanu.com", W / 2, H - 50);
+  ctx.textAlign = "center";
+  ctx.fillText("Get yours at epoch.snanu.com", W / 2, H - 62);
 }
 
 /* ============================= DATE INPUT (DD / MM / YYYY segments) ============================= */
@@ -1285,6 +1273,48 @@ function init() {
     a.download = "epoch-card.png";
     a.href = canvas.toDataURL("image/png");
     a.click();
+  });
+
+  const shareNote = document.getElementById("shareNote");
+  function flashShareNote(text) {
+    shareNote.textContent = text;
+    shareNote.classList.add("show");
+    setTimeout(() => shareNote.classList.remove("show"), 3000);
+  }
+
+  document.getElementById("shareBtn").addEventListener("click", async () => {
+    const canvas = document.getElementById("shareCanvas");
+    const shareTitle = "EPOCH: Your Life, By The Numbers";
+    const shareText = "I just turned my birthdate into a whole story. See yours:";
+    const shareUrl = "https://epoch.snanu.com";
+
+    canvas.toBlob(async (blob) => {
+      if (blob) {
+        const file = new File([blob], "epoch-card.png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: shareTitle, text: shareText, url: shareUrl });
+            return;
+          } catch (e) {
+            if (e.name === "AbortError") return;
+          }
+        }
+      }
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+          return;
+        } catch (e) {
+          if (e.name === "AbortError") return;
+        }
+      }
+      try {
+        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+        flashShareNote("Link copied! Paste it anywhere to share.");
+      } catch (e) {
+        window.open(shareUrl, "_blank");
+      }
+    }, "image/png");
   });
 
   document.getElementById("restartBtn").addEventListener("click", () => {
