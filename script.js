@@ -1119,6 +1119,24 @@ async function drawShareCard(data) {
 
   const barsY = vsTitleY + 44;
 
+  // Draws a bar's value label inside the filled bar (dark-on-color) when
+  // there's room, otherwise just outside it (light-on-track) — a short bar
+  // (e.g. a mayfly's 1-day lifespan) would otherwise push the text off the
+  // left edge of the card.
+  function drawBarValue(text, barLeft, barFillW, y) {
+    ctx.font = "700 26px 'Space Mono'";
+    const textW = ctx.measureText(text).width;
+    if (textW + 32 <= barFillW) {
+      ctx.fillStyle = "#0a0a12";
+      ctx.textAlign = "right";
+      ctx.fillText(text, barLeft + barFillW - 16, y);
+    } else {
+      ctx.fillStyle = "#f3ede1";
+      ctx.textAlign = "left";
+      ctx.fillText(text, barLeft + barFillW + 16, y);
+    }
+  }
+
   // "You" bar
   ctx.font = "700 24px 'Space Mono'";
   ctx.fillStyle = "#f3ede1cc";
@@ -1131,10 +1149,7 @@ async function drawShareCard(data) {
   youGrad.addColorStop(1, accent + "cc");
   ctx.fillStyle = youGrad;
   ctx.fillRect(barX, barsY, youBarW, barH);
-  ctx.font = "700 26px 'Space Mono'";
-  ctx.fillStyle = "#0a0a12";
-  ctx.textAlign = "right";
-  ctx.fillText(fmt(data.days) + "d", barX + youBarW - 16, barsY + 35);
+  drawBarValue(fmt(data.days) + "d", barX, youBarW, barsY + 35);
 
   // "Animal" bar
   const animalBarY = barsY + barH + barGap;
@@ -1146,10 +1161,7 @@ async function drawShareCard(data) {
   ctx.fillRect(barX, animalBarY, barMaxW, barH);
   ctx.fillStyle = "#9b8cff";
   ctx.fillRect(barX, animalBarY, animalBarW, barH);
-  ctx.font = "700 26px 'Space Mono'";
-  ctx.fillStyle = "#0a0a12";
-  ctx.textAlign = "right";
-  ctx.fillText(fmt(data.animal.days) + "d", barX + animalBarW - 16, animalBarY + 35);
+  drawBarValue(fmt(data.animal.days) + "d", barX, animalBarW, animalBarY + 35);
 
   // ---- Life progress bar ----
   const lifeTitleY = animalBarY + barH + 65;
